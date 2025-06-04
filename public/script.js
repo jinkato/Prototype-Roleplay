@@ -10,6 +10,27 @@ const fns = {
 		document.body.style.color = color;
 		return { success: true, color };
 	},
+	showInstagramSlide: () => {
+		document.getElementById('slideWelcome').style.display = 'none';
+		document.getElementById('slideDisagreement').style.display = 'none';
+		document.getElementById('slideNewFeature').style.display = 'none';
+		document.getElementById('slideInstagram').style.display = 'block';
+		return { success: true, message: 'Instagram Slide is now visible' };
+	},
+	showDisagreementSlide: () => {
+		document.getElementById('slideWelcome').style.display = 'none';
+		document.getElementById('slideInstagram').style.display = 'none';
+		document.getElementById('slideNewFeature').style.display = 'none';
+		document.getElementById('slideDisagreement').style.display = 'block';
+		return { success: true, message: 'Instagram Slide is now visible' };
+	},
+	showNewFeatureSlide: () => {
+		document.getElementById('slideWelcome').style.display = 'none';
+		document.getElementById('slideInstagram').style.display = 'none';
+		document.getElementById('slideNewFeature').style.display = 'block';
+		document.getElementById('slideDisagreement').style.display = 'none';
+		return { success: true, message: 'Instagram Slide is now visible' };
+	},
 };
 
 // Create a WebRTC Agent
@@ -61,6 +82,21 @@ function configureData() {
 					name: 'getPageHTML',
 					description: 'Gets the HTML for the current page',
 				},
+				{
+					type: 'function',
+					name: 'showInstagramSlide',
+					description: 'Shows Instagram slide',
+				},
+				{
+					type: 'function',
+					name: 'showDisagreementSlide',
+					description: 'Shows Disagreement slide',
+				},
+				{
+					type: 'function',
+					name: 'showNewFeatureSlide',
+					description: 'Shows New Feature slide',
+				},
 			],
 		},
 	};
@@ -72,19 +108,13 @@ dataChannel.addEventListener('open', (ev) => {
 	configureData();
 });
 
-// {
-//     "type": "response.function_call_arguments.done",
-//     "event_id": "event_Ad2gt864G595umbCs2aF9",
-//     "response_id": "resp_Ad2griUWUjsyeLyAVtTtt",
-//     "item_id": "item_Ad2gsxA84w9GgEvFwW1Ex",
-//     "output_index": 1,
-//     "call_id": "call_PG12S5ER7l7HrvZz",
-//     "name": "get_weather",
-//     "arguments": "{\"location\":\"Portland, Oregon\"}"
-// }
 
 dataChannel.addEventListener('message', async (ev) => {
 	const msg = JSON.parse(ev.data);
+	
+	// Log message types for debugging only
+	console.log('Message type:', msg.type);
+	
 	// Handle function calls
 	if (msg.type === 'response.function_call_arguments.done') {
 		const fn = fns[msg.name];
@@ -130,7 +160,7 @@ function startVoiceChat() {
 				},
 				body: JSON.stringify({
 					model: "gpt-4o-realtime-preview-2024-12-17",
-					instructions: "<ro<role>You are conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline><guideline>After each question you ask, change the background color of the website to a random color</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement?</question><question>Design a product for busy parents who want to cook healthy meals</question><question>A key feature's usage dropped 30% last month - walk me through your investigation approach</question></category><category name='analytical'><question>How would you measure the success of a new feature launch?</question><question>What metrics would you track for an e-commerce mobile app?</question></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams?</question><question>Your engineering team says a feature will take 3x longer than expected - how do you respond?</question></category><category name='situational'><question>Your biggest competitor just launched a feature your team was planning - what's your next move?</question><question>How would you prioritize features when you have limited engineering resources?</question></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction></instructions><start_message>Begin the interview now.</start_message>le>You are conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement?</question><question>Design a product for busy parents who want to cook healthy meals</question><question>A key feature's usage dropped 30% last month - walk me through your investigation approach</question></category><category name='analytical'><question>How would you measure the success of a new feature launch?</question><question>What metrics would you track for an e-commerce mobile app?</question></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams?</question><question>Your engineering team says a feature will take 3x longer than expected - how do you respond?</question></category><category name='situational'><question>Your biggest competitor just launched a feature your team was planning - what's your next move?</question><question>How would you prioritize features when you have limited engineering resources?</question></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction></instructions><start_message>Begin the interview now.</start_message>",
+					instructions: "<interview_simulation><role>You are Tom, conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer named Tom</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline><guideline>CRITICAL: ALWAYS execute the slide action immediately when asking these specific questions</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement? MUST SHOW INSTAGRAM SLIDE</question></category><category name='analytical'><question>How would you measure the success of a new feature launch? MUST SHOW NEW FEATURE SLIDE</question></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams? MUST SHOW DISAGREEMENT SLIDE</question></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction><instruction>MANDATORY: When asking Instagram question say 'Show Instagram Slide', when asking feature launch question say 'Show New Feature Slide', when asking disagreement question say 'Show Disagreement Slide'</instruction></instructions><start_message>Begin the interview now.</start_message></interview_simulation>",
 					voice: "ash",
 				}),
 			})
