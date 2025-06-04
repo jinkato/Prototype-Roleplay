@@ -1,16 +1,112 @@
-/* Ensure the body takes up the full height */
+/* Base styles and typography */
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     min-height: 100vh;
+    background-color: black;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+}
+h1 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 24px;
+    margin: 0;
+    color: #222;
+}
+
+p {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    line-height: 1.5;
+    margin: 0;
+    color: #444;
 }
 
 /* Content */
-.content {
-    flex: 1;
+.instruction{
+    background-color: white;
+    width: 300px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    gap: 20px;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.1);
 }
 
+.instruction button {
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.instruction button:hover {
+    background-color: #3367d6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.instruction button:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.inner_content{
+    max-width: 800px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+    box-sizing: border-box;
+    padding: 20px;
+}
+.slides {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.slides img {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 10px;
+}
+.interviewer{
+    width: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.interviewer img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+}
 
 #slideInstagram{
     display: none;

@@ -38,17 +38,42 @@ const peerConnection = new RTCPeerConnection();
 
 // On inbound audio add to page
 peerConnection.ontrack = (event) => {
-	const el = document.createElement('audio');
-	el.srcObject = event.streams[0];
-	el.autoplay = el.controls = true;
+	const inboundAudio = document.createElement('audio');
+	inboundAudio.srcObject = event.streams[0];
+	inboundAudio.autoplay = inboundAudio.controls = true;
 	// Append to instruction div instead of body
-	document.querySelector('.instruction').appendChild(el);
+	document.querySelector('.instruction').appendChild(inboundAudio);
+
+	// Add event listeners to track AI speaking status
+	inboundAudio.addEventListener('play', () => {
+		console.log('AI STARTED TALKING');
+		// Add a visual indicator when AI starts talking
+	});
+
+	// This only fires when manually paused, not when AI naturally stops
+	inboundAudio.addEventListener('pause', () => {
+		console.log('MANUAL PAUSE - User clicked pause button');
+	});
+
+	// This is the correct event for when AI naturally finishes speaking
+	inboundAudio.addEventListener('ended', () => {
+		console.log('AI FINISHED TALKING - Natural end of speech');
+	});
+	
+	// These events can help track the audio stream status more accurately
+	inboundAudio.addEventListener('playing', () => {
+		console.log('AI SPEECH IS PLAYING');
+	});
+	
+	inboundAudio.addEventListener('waiting', () => {
+		console.log('AI SPEECH BUFFERING');
+	});
 };
 
 const dataChannel = peerConnection.createDataChannel('oai-events');
 
 function configureData() {
-	console.log('Configuring data channel');
+	// console.log('Configuring data channel');
 	const event = {
 		type: 'session.update',
 		session: {
@@ -104,25 +129,46 @@ function configureData() {
 }
 
 dataChannel.addEventListener('open', (ev) => {
-	console.log('Opening data channel', ev);
+	// console.log('Opening data channel', ev);
 	configureData();
 });
 
 
+// Track AI speaking status
+let aiIsTalking = false;
+
 dataChannel.addEventListener('message', async (ev) => {
 	const msg = JSON.parse(ev.data);
 	
-	// Log message types for debugging only
+	// Log all message types for debugging
 	console.log('Message type:', msg.type);
+	
+	// Detect AI speaking start based on specific message type
+	if (msg.type === 'output_audio_buffer.started') {
+		if (!aiIsTalking) {
+			aiIsTalking = true;
+			console.log('AI STARTED TALKING (detected from output_audio_buffer.started)');
+			document.querySelector('.interviewer img').style.border = '3px solid orange';
+		}
+	}
+	
+	// This specific message indicates the AI has finished its turn
+	if (msg.type === 'output_audio_buffer.stopped') {
+		if (aiIsTalking) {
+			aiIsTalking = false;
+			console.log('AI STOPPED TALKING (detected from output_audio_buffer.stopped)');
+			document.querySelector('.interviewer img').style.border = 'none';
+		}
+	}
 	
 	// Handle function calls
 	if (msg.type === 'response.function_call_arguments.done') {
 		const fn = fns[msg.name];
 		if (fn !== undefined) {
-			console.log(`Calling local function ${msg.name} with ${msg.arguments}`);
+			// console.log(`Calling local function ${msg.name} with ${msg.arguments}`);
 			const args = JSON.parse(msg.arguments);
 			const result = await fn(args);
-			console.log('result', result);
+			// console.log('result', result);
 			// Let OpenAI know that the function has been called and share it's output
 			const event = {
 				type: 'conversation.item.create',
@@ -142,6 +188,15 @@ dataChannel.addEventListener('message', async (ev) => {
 function startVoiceChat() {
 	// Capture microphone
 	navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+		console.log('AI IS LISTENING - Microphone activated');
+		
+		// Set up an event listener to detect when audio input stops
+		const audioTracks = stream.getAudioTracks();
+		audioTracks.forEach(track => {
+			track.addEventListener('ended', () => {
+				console.log('AI STOPPED LISTENING - Microphone deactivated');
+			});
+		});
 		// Add microphone to PeerConnection
 		stream.getTracks().forEach((track) => peerConnection.addTransceiver(track, { direction: 'sendrecv' }));
 
@@ -160,7 +215,7 @@ function startVoiceChat() {
 				},
 				body: JSON.stringify({
 					model: "gpt-4o-realtime-preview-2024-12-17",
-					instructions: "<interview_simulation><role>You are Tom, conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer named Tom</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline><guideline>CRITICAL: ALWAYS execute the slide action immediately when asking these specific questions</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement? MUST SHOW INSTAGRAM SLIDE</question></category><category name='analytical'><question>How would you measure the success of a new feature launch? MUST SHOW NEW FEATURE SLIDE</question></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams? MUST SHOW DISAGREEMENT SLIDE</question></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction><instruction>MANDATORY: When asking Instagram question say 'Show Instagram Slide', when asking feature launch question say 'Show New Feature Slide', when asking disagreement question say 'Show Disagreement Slide'</instruction></instructions><start_message>Begin the interview now.</start_message></interview_simulation>",
+					instructions: "<interview_simulation><role>You are Tom, conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer named Tom</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline><guideline>CRITICAL: Always include the slide command in brackets when asking specific questions</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement?</question><slide_command>[Show Instagram Slide]</slide_command></category><category name='analytical'><question>How would you measure the success of a new feature launch?</question><slide_command>[Show New Feature Slide]</slide_command></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams?</question><slide_command>[Show Disagreement Slide]</slide_command></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction><instruction>MANDATORY: Include the slide_command in square brackets exactly as written - these are system commands, not spoken words</instruction></instructions><start_message>Begin the interview now.</start_message></interview_simulation>",
 					voice: "ash",
 				}),
 			})
