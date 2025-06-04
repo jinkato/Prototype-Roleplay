@@ -20,7 +20,8 @@ peerConnection.ontrack = (event) => {
 	const el = document.createElement('audio');
 	el.srcObject = event.streams[0];
 	el.autoplay = el.controls = true;
-	document.body.appendChild(el);
+	// Append to instruction div instead of body
+	document.querySelector('.instruction').appendChild(el);
 };
 
 const dataChannel = peerConnection.createDataChannel('oai-events');
