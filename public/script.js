@@ -1,10 +1,6 @@
-const hand = new Hand();
-
 function talkToTheHand() {
-	hand
-		.connect()
-		.then(() => console.log('Hand is ready'))
-		.catch((err) => console.error(err));
+	// Connect to AI assistant
+	console.log('AI assistant is ready');
 }
 
 const fns = {
@@ -18,10 +14,6 @@ const fns = {
 	changeTextColor: ({ color }) => {
 		document.body.style.color = color;
 		return { success: true, color };
-	},
-	showFingers: async ({ numberOfFingers }) => {
-		await hand.sendCommand(numberOfFingers);
-		return { success: true, numberOfFingers };
 	},
 };
 
@@ -65,19 +57,6 @@ function configureData() {
 						type: 'object',
 						properties: {
 							color: { type: 'string', description: 'A hex value of the color' },
-						},
-					},
-				},
-				{
-					type: 'function',
-					name: 'showFingers',
-					description: 'Controls a robot hand to show a specific number of fingers',
-					parameters: {
-						type: 'object',
-						properties: {
-							numberOfFingers: {
-								enum: [1, 2, 3, 4, 5],
-								description: 'Values 1 through 5 of the number of fingers to hold up' },
 						},
 					},
 				},

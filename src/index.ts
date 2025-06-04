@@ -10,7 +10,7 @@ app.use(cors());
 
 const DEFAULT_INSTRUCTIONS = `You are helpful and have some tools installed.
 
-In the tools you have the ability to control a robot hand.
+You can help modify the appearance of web pages by changing colors and retrieving page content.
 `;
 
 app.get('/session', async (c) => {
