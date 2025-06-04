@@ -148,7 +148,7 @@ dataChannel.addEventListener('message', async (ev) => {
 		if (!aiIsTalking) {
 			aiIsTalking = true;
 			console.log('AI STARTED TALKING (detected from output_audio_buffer.started)');
-			document.querySelector('.interviewer img').style.border = '3px solid orange';
+			document.querySelector('.interviewer img').style.border = '5px solid orange';
 		}
 	}
 	
@@ -165,10 +165,8 @@ dataChannel.addEventListener('message', async (ev) => {
 	if (msg.type === 'response.function_call_arguments.done') {
 		const fn = fns[msg.name];
 		if (fn !== undefined) {
-			// console.log(`Calling local function ${msg.name} with ${msg.arguments}`);
 			const args = JSON.parse(msg.arguments);
 			const result = await fn(args);
-			// console.log('result', result);
 			// Let OpenAI know that the function has been called and share it's output
 			const event = {
 				type: 'conversation.item.create',

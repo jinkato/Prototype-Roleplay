@@ -101,11 +101,18 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    height: fit-content; /* Make height match content */
 }
 .interviewer img {
-    max-width: 100%;
-    max-height: 300px;
+    width: 100%;
+    height: auto;
+    display: block;
     object-fit: contain;
+    border-radius: 10px;
 }
 
 #slideInstagram{
