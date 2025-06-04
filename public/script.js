@@ -134,8 +134,60 @@ dataChannel.addEventListener('open', (ev) => {
 });
 
 
-// Track AI speaking status
+// Track AI speaking status and user responses
 let aiIsTalking = false;
+let lastQuestion = "";
+let recentUserResponse = "";
+
+// Function to evaluate the quality of the user's answer
+function evaluateAnswer(response, question) {
+	// Skip evaluation for short responses or non-answers
+	if (!response || response.length < 10) {
+		return null;
+	}
+	
+	// Default to medium quality
+	let quality = 'medium';
+	
+	// Simple keyword-based evaluation - this is basic but gives the idea
+	const positiveKeywords = ['strategy', 'user', 'data', 'research', 'metrics', 'prioritize', 'goals', 'stakeholders', 'value', 'problem', 'solution'];
+	const negativeKeywords = ['dunno', 'not sure', 'whatever', 'i guess'];
+	
+	// Count positive and negative indicators
+	let positiveScore = 0;
+	let negativeScore = 0;
+	
+	// Check for positive keywords (case insensitive)
+	positiveKeywords.forEach(keyword => {
+		const regex = new RegExp(keyword, 'i');
+		if (regex.test(response)) {
+			positiveScore++;
+		}
+	});
+	
+	// Check for negative keywords (case insensitive)
+	negativeKeywords.forEach(keyword => {
+		const regex = new RegExp(keyword, 'i');
+		if (regex.test(response)) {
+			negativeScore++;
+		}
+	});
+	
+	// Response length factor
+	if (response.split(' ').length > 30) {
+		positiveScore++; // Detailed answers are generally good
+	}
+	
+	// Determine quality based on scores
+	if (positiveScore >= 3 && negativeScore === 0) {
+		quality = 'high';
+	} else if (negativeScore > 0 || positiveScore === 0) {
+		quality = 'low';
+	}
+	
+	console.log(`ANSWER EVALUATION: ${quality.toUpperCase()} (positive: ${positiveScore}, negative: ${negativeScore})`);
+	return quality;
+}
 
 dataChannel.addEventListener('message', async (ev) => {
 	const msg = JSON.parse(ev.data);
@@ -159,6 +211,23 @@ dataChannel.addEventListener('message', async (ev) => {
 			console.log('AI STOPPED TALKING (detected from output_audio_buffer.stopped)');
 			document.querySelector('.interviewer img').style.border = 'none';
 		}
+	}
+	
+	// Detect user speech transcript when available
+	if (msg.type === 'input_audio_buffer.transcript') {
+		console.log('USER SPEECH DETECTED:', msg.text);
+		recentUserResponse = msg.text;
+		
+		// Evaluate user's response if substantial enough
+		if (recentUserResponse && recentUserResponse.length > 10) {
+			evaluateAnswer(recentUserResponse, lastQuestion);
+		}
+	}
+	
+	// Store the last thing the AI said as the potential "question"
+	if (msg.type === 'output_audio_buffer.transcript') {
+		lastQuestion = msg.text;
+		console.log('AI SPEECH TRANSCRIPT:', lastQuestion);
 	}
 	
 	// Handle function calls
