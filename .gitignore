@@ -1,0 +1,25 @@
+# API Keys
+config.js
+.env
+
+# Node modules
+node_modules
+dist
+.wrangler
+.dev.vars
+.DS_Store/
+build/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
