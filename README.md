@@ -23,10 +23,9 @@ A web application that simulates a Junior Product Manager interview using OpenAI
    cd roleplay
    ```
 
-2. **Configure API Key**: Edit `public/script.js` and replace `'your-openai-api-key-here'` with your actual OpenAI API key:
-   ```javascript
-   const OPENAI_API_KEY = 'your-openai-api-key-here'; // Replace with your API key
-   ```
+2. **API Key**: When you start the application in your browser, you'll be prompted to enter your OpenAI API key. The key will be stored in your browser's localStorage and never sent to any server other than OpenAI.
+   - Get an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+   - Make sure your API key has access to the GPT-4o Realtime API
 
 3. **Start the server**:
    ```bash
