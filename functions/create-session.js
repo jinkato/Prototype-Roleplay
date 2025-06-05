@@ -1,6 +1,9 @@
 // Netlify serverless function to create a OpenAI real-time session
 const fetch = require('node-fetch');
 
+// Check for environment variables at function load time
+console.log('Function loaded, checking API key:', process.env.OPENAI_API_KEY ? 'API KEY EXISTS' : 'API KEY MISSING');
+
 exports.handler = async function(event, context) {
   try {
     // Only allow POST requests
