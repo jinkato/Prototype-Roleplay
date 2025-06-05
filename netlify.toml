@@ -1,6 +1,10 @@
 [build]
   publish = "public"
   functions = "functions"
+  command = "npm install"
   
 [dev]
   framework = "#static"
+  
+[functions]
+  node_bundler = "esbuild"

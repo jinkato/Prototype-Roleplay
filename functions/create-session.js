@@ -1,7 +1,7 @@
 // Netlify serverless function to create a OpenAI real-time session
-import fetch from 'node-fetch';
+const fetch = require('node-fetch');
 
-export async function handler(event, context) {
+exports.handler = async function(event, context) {
   try {
     // Only allow POST requests
     if (event.httpMethod !== 'POST') {
