@@ -281,7 +281,7 @@ function startVoiceChat() {
 			})
 			.catch(error => {
 				console.error('Error creating session:', error);
-				alert('Please set your OpenAI API key in the script.js file');
+				alert('Error connecting to OpenAI API. Please ensure the OPENAI_API_KEY environment variable is set correctly in your Netlify dashboard.');
 			});
 		});
 	});
