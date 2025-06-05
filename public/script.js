@@ -11,25 +11,40 @@ const fns = {
 		return { success: true, color };
 	},
 	showInstagramSlide: () => {
-		document.getElementById('slideWelcome').style.display = 'none';
-		document.getElementById('slideDisagreement').style.display = 'none';
-		document.getElementById('slideNewFeature').style.display = 'none';
-		document.getElementById('slideInstagram').style.display = 'block';
+		// Fade out all slides
+		document.getElementById('slideWelcome').style.opacity = '0';
+		document.getElementById('slideDisagreement').style.opacity = '0';
+		document.getElementById('slideNewFeature').style.opacity = '0';
+		
+		// Fade in the Instagram slide
+		setTimeout(() => {
+			document.getElementById('slideInstagram').style.opacity = '1';
+		}, 300); // Wait for the fade out to complete
 		return { success: true, message: 'Instagram Slide is now visible' };
 	},
 	showDisagreementSlide: () => {
-		document.getElementById('slideWelcome').style.display = 'none';
-		document.getElementById('slideInstagram').style.display = 'none';
-		document.getElementById('slideNewFeature').style.display = 'none';
-		document.getElementById('slideDisagreement').style.display = 'block';
-		return { success: true, message: 'Instagram Slide is now visible' };
+		// Fade out all slides
+		document.getElementById('slideWelcome').style.opacity = '0';
+		document.getElementById('slideInstagram').style.opacity = '0';
+		document.getElementById('slideNewFeature').style.opacity = '0';
+		
+		// Fade in the Disagreement slide
+		setTimeout(() => {
+			document.getElementById('slideDisagreement').style.opacity = '1';
+		}, 300); // Wait for the fade out to complete
+		return { success: true, message: 'Disagreement Slide is now visible' };
 	},
 	showNewFeatureSlide: () => {
-		document.getElementById('slideWelcome').style.display = 'none';
-		document.getElementById('slideInstagram').style.display = 'none';
-		document.getElementById('slideNewFeature').style.display = 'block';
-		document.getElementById('slideDisagreement').style.display = 'none';
-		return { success: true, message: 'Instagram Slide is now visible' };
+		// Fade out all slides
+		document.getElementById('slideWelcome').style.opacity = '0';
+		document.getElementById('slideInstagram').style.opacity = '0';
+		document.getElementById('slideDisagreement').style.opacity = '0';
+		
+		// Fade in the New Feature slide
+		setTimeout(() => {
+			document.getElementById('slideNewFeature').style.opacity = '1';
+		}, 300); // Wait for the fade out to complete
+		return { success: true, message: 'New Feature Slide is now visible' };
 	},
 };
 
@@ -43,6 +58,12 @@ peerConnection.ontrack = (event) => {
 	inboundAudio.autoplay = inboundAudio.controls = true;
 	// Append to instruction div instead of body
 	document.querySelector('.instruction').appendChild(inboundAudio);
+	
+	// Hide the loader when audio element is created
+	const loader = document.getElementById('loader');
+	if (loader) {
+		loader.style.display = 'none';
+	}
 
 	// Add event listeners to track AI speaking status
 	inboundAudio.addEventListener('play', () => {
@@ -235,6 +256,16 @@ dataChannel.addEventListener('message', async (ev) => {
 });
 
 function startVoiceChat() {
+	// Remove the button and show the loader
+	const startButton = document.querySelector('.instruction button');
+	const loader = document.getElementById('loader');
+	if (startButton) {
+		startButton.remove();
+	}
+	// Show the loader
+	if (loader) {
+		loader.style.display = 'block';
+	}
 	// Capture microphone
 	navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
 		console.log('AI IS LISTENING - Microphone activated');
@@ -264,7 +295,7 @@ function startVoiceChat() {
 				},
 				body: JSON.stringify({
 					model: "gpt-4o-realtime-preview-2024-12-17",
-					instructions: "<interview_simulation><role>You are Tom, conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward. CRITICAL RULE: You MUST include slide commands in brackets for every question you ask.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer named Tom</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline><guideline>ABSOLUTE REQUIREMENT: NEVER ask a question without including its corresponding slide command in brackets</guideline><guideline>REMEMBER: Instagram question = [Show Instagram Slide], Feature question = [Show New Feature Slide], Disagreement question = [Show Disagreement Slide]</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below - ALWAYS include the slide command in brackets</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement? MANDATORY: [Show Instagram Slide]</question></category><category name='analytical'><question>How would you measure the success of a new feature launch? MANDATORY: [Show New Feature Slide]</question></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams? MANDATORY: [Show Disagreement Slide]</question></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction><instruction>CRITICAL: Every time you ask the Instagram question include [Show Instagram Slide]</instruction><instruction>CRITICAL: Every time you ask the feature launch question include [Show New Feature Slide]</instruction><instruction>CRITICAL: Every time you ask the disagreement question include [Show Disagreement Slide]</instruction><instruction>FAILURE TO INCLUDE SLIDE COMMANDS WILL BREAK THE SYSTEM</instruction></instructions><start_message>Begin the interview now.</start_message></interview_simulation>",
+					instructions: "<interview_simulation><role>You are Tom, conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward. CRITICAL RULE: You MUST include slide commands in brackets for every question you ask.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer named Tom</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline><guideline>ABSOLUTE REQUIREMENT: NEVER ask a question without including its corresponding slide command in brackets</guideline><guideline>REMEMBER: Instagram question = [Show Instagram Slide], Feature question = [Show New Feature Slide], Disagreement question = [Show Disagreement Slide]</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below - ALWAYS include the slide command in brackets</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement? MANDATORY: [Show Instagram Slide]</question></category><category name='analytical'><question>How would you measure the success of a new feature launch? MANDATORY: [Show New Feature Slide]</question></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams? MANDATORY: [Show Disagreement Slide]</question></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction><instruction>CRITICAL: Every time you ask the Instagram question include [Show Instagram Slide]</instruction><instruction>CRITICAL: Every time you ask the feature launch question include [Show New Feature Slide]</instruction><instruction>CRITICAL: Every time you ask the disagreement question include [Show Disagreement Slide]</instruction><instruction>FAILURE TO INCLUDE SLIDE COMMANDS WILL BREAK THE SYSTEM</instruction></instructions><start_message>Begin the interview now by immediately introducing yourself as Tom and asking your first question without waiting for any response.</start_message></interview_simulation>",
 					voice: "ash",
 				}),
 			})

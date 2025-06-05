@@ -70,6 +70,23 @@ p {
     max-width: 100%;
     margin-top: 10px;
 }
+
+/* Loader animation */
+.loader {
+    display: none;
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(66, 133, 244, 0.2);
+    border-top: 5px solid #4285f4;
+    border-radius: 50%;
+    margin: 20px auto;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 .content {
     flex: 1;
     display: flex;
@@ -95,12 +112,17 @@ p {
     border-radius: 10px;
     background-color: #fff;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    position: relative;
+    height: 400px;
 }
 .slides img {
     max-width: 100%;
     max-height: 400px;
     object-fit: contain;
     border-radius: 10px;
+    transition: opacity 0.6s ease;
+    opacity: 1;
+    position: absolute;
 }
 .interviewer{
     width: 160px;
@@ -121,14 +143,22 @@ p {
     border-radius: 10px;
 }
 
+#slideWelcome {
+    opacity: 1; /* Visible by default */
+    pointer-events: auto;
+}
+
 #slideInstagram{
-    display: none;
+    opacity: 0;
+    pointer-events: none;
 }
 #slideDisagreement{
-    display: none;
+    opacity: 0;
+    pointer-events: none;
 }
 #slideNewFeature{
-    display: none;
+    opacity: 0;
+    pointer-events: none;
 }
 
 
