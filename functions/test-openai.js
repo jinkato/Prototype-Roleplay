@@ -1,5 +1,36 @@
 // Simple test function to verify OpenAI API key works
-const fetch = require('node-fetch');
+// Using native https instead of node-fetch to avoid ES module issues
+const https = require('https');
+
+// Promise-based wrapper for https.request
+function httpsRequest(url, options, data = null) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => (body += chunk.toString()));
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            const json = JSON.parse(body);
+            resolve({ statusCode: res.statusCode, body: json });
+          } catch (error) {
+            resolve({ statusCode: res.statusCode, body });
+          }
+        } else {
+          try {
+            reject({ statusCode: res.statusCode, body: JSON.parse(body) });
+          } catch (error) {
+            reject({ statusCode: res.statusCode, body });
+          }
+        }
+      });
+    });
+
+    req.on('error', (error) => reject(error));
+    if (data) req.write(data);
+    req.end();
+  });
+}
 
 exports.handler = async function(event, context) {
   try {
@@ -8,41 +39,34 @@ exports.handler = async function(event, context) {
     
     // Attempt a very simple OpenAI API call (models list) to validate the key
     try {
-      const response = await fetch('https://api.openai.com/v1/models', {
+      const options = {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
         }
-      });
+      };
       
-      if (response.ok) {
-        // We don't need the full models list, just confirmation it worked
-        return {
-          statusCode: 200,
-          body: JSON.stringify({
-            success: true,
-            message: 'API key is valid and working'
-          })
-        };
-      } else {
-        const errorData = await response.json();
-        return {
-          statusCode: response.status,
-          body: JSON.stringify({
-            success: false,
-            error: 'API key validation failed',
-            details: errorData
-          })
-        };
-      }
-    } catch (apiError) {
-      console.error('OpenAI API test error:', apiError);
+      const response = await httpsRequest('https://api.openai.com/v1/models', options);
+      
+      // If we get here, the request was successful
       return {
-        statusCode: 500,
+        statusCode: 200,
+        body: JSON.stringify({
+          success: true,
+          message: 'API key is valid and working',
+          apiVersion: response.body.object || 'unknown'
+        })
+      };
+      
+    } catch (apiError) {
+      // API call failed
+      return {
+        statusCode: apiError.statusCode || 500,
         body: JSON.stringify({
           success: false,
-          error: 'OpenAI API test error',
-          message: apiError.message
+          error: 'API key validation failed',
+          details: apiError.body || apiError.message
         })
       };
     }
