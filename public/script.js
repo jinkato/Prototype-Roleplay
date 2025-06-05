@@ -245,10 +245,8 @@ function startVoiceChat() {
 		peerConnection.createOffer().then((offer) => {
 			peerConnection.setLocalDescription(offer);
 			
-			// IMPORTANT: Set your OpenAI API key here
-			// Get a new key at: https://platform.openai.com/api-keys
-			// For security, do not commit this key to version control
-			const OPENAI_API_KEY = 'your-openai-api-key-here'; // Replace with your API key
+			// You'll need to set your OpenAI API key here
+			const OPENAI_API_KEY = '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';
 			
 			// Create ephemeral session directly with OpenAI
 			fetch("https://api.openai.com/v1/realtime/sessions", {
