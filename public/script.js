@@ -1,15 +1,4 @@
 const fns = {
-	getPageHTML: () => {
-		return { success: true, html: document.documentElement.outerHTML };
-	},
-	changeBackgroundColor: ({ color }) => {
-		document.body.style.backgroundColor = color;
-		return { success: true, color };
-	},
-	changeTextColor: ({ color }) => {
-		document.body.style.color = color;
-		return { success: true, color };
-	},
 	showInstagramSlide: () => {
 		// Fade out all slides
 		document.getElementById('slideWelcome').style.opacity = '0';
@@ -101,33 +90,6 @@ function configureData() {
 			modalities: ['text', 'audio'],
 			// Provide the tools. Note they match the keys in the `fns` object above
 			tools: [
-				{
-					type: 'function',
-					name: 'changeBackgroundColor',
-					description: 'Changes the background color of a web page',
-					parameters: {
-						type: 'object',
-						properties: {
-							color: { type: 'string', description: 'A hex value of the color' },
-						},
-					},
-				},
-				{
-					type: 'function',
-					name: 'changeTextColor',
-					description: 'Changes the text color of a web page',
-					parameters: {
-						type: 'object',
-						properties: {
-							color: { type: 'string', description: 'A hex value of the color' },
-						},
-					},
-				},
-				{
-					type: 'function',
-					name: 'getPageHTML',
-					description: 'Gets the HTML for the current page',
-				},
 				{
 					type: 'function',
 					name: 'showInstagramSlide',
@@ -284,7 +246,7 @@ function startVoiceChat() {
 			peerConnection.setLocalDescription(offer);
 			
 			// You'll need to set your OpenAI API key here
-			const OPENAI_API_KEY = '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';
+			const OPENAI_API_KEY = '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';
 			
 			// Create ephemeral session directly with OpenAI
 			fetch("https://api.openai.com/v1/realtime/sessions", {
