@@ -138,64 +138,72 @@ dataChannel.addEventListener('open', (ev) => {
 let aiIsTalking = false;
 let lastQuestion = "";
 let recentUserResponse = "";
+let currentTranscript = "";
 
 // Function to evaluate the quality of the user's answer
 function evaluateAnswer(response, question) {
-	// Skip evaluation for short responses or non-answers
-	if (!response || response.length < 10) {
-		return null;
-	}
-	
-	// Default to medium quality
-	let quality = 'medium';
-	
-	// Simple keyword-based evaluation - this is basic but gives the idea
-	const positiveKeywords = ['strategy', 'user', 'data', 'research', 'metrics', 'prioritize', 'goals', 'stakeholders', 'value', 'problem', 'solution'];
-	const negativeKeywords = ['dunno', 'not sure', 'whatever', 'i guess'];
-	
-	// Count positive and negative indicators
-	let positiveScore = 0;
-	let negativeScore = 0;
-	
-	// Check for positive keywords (case insensitive)
-	positiveKeywords.forEach(keyword => {
-		const regex = new RegExp(keyword, 'i');
-		if (regex.test(response)) {
-			positiveScore++;
-		}
-	});
-	
-	// Check for negative keywords (case insensitive)
-	negativeKeywords.forEach(keyword => {
-		const regex = new RegExp(keyword, 'i');
-		if (regex.test(response)) {
-			negativeScore++;
-		}
-	});
-	
-	// Response length factor
-	if (response.split(' ').length > 30) {
-		positiveScore++; // Detailed answers are generally good
-	}
-	
-	// Determine quality based on scores
-	if (positiveScore >= 3 && negativeScore === 0) {
-		quality = 'high';
-	} else if (negativeScore > 0 || positiveScore === 0) {
-		quality = 'low';
-	}
-	
-	console.log(`ANSWER EVALUATION: ${quality.toUpperCase()} (positive: ${positiveScore}, negative: ${negativeScore})`);
-	return quality;
+  // List of positive keywords for good PM answers
+  const positiveKeywords = [
+    'strategy', 'user', 'customer', 'data', 'metrics', 'kpi', 'prioritize',
+    'research', 'value', 'stakeholder', 'roadmap', 'feature', 'market',
+    'insight', 'requirement', 'solution', 'analyze', 'implement', 'product'
+  ];
+
+  // List of negative keywords indicating uncertainty or low quality
+  const negativeKeywords = [
+    'dunno', 'not sure', 'i guess', 'maybe', 'probably',
+    'i don\'t know', 'umm', 'uh', 'like'
+  ];
+
+  // Count how many positive keywords are present
+  const positiveCount = positiveKeywords.filter(keyword =>
+    response.toLowerCase().includes(keyword.toLowerCase())
+  ).length;
+
+  // Count negative keywords
+  const negativeCount = negativeKeywords.filter(keyword =>
+    response.toLowerCase().includes(keyword.toLowerCase())
+  ).length;
+
+  // Factor in response length (longer tends to be better, to a point)
+  const lengthScore = Math.min(response.length / 100, 3); // Cap at 3 points
+
+  // Calculate overall score
+  const overallScore = positiveCount - negativeCount + lengthScore;
+
+  // Determine quality rating
+  let quality;
+  if (overallScore >= 5) {
+    quality = 'HIGH';
+  } else if (overallScore >= 2) {
+    quality = 'MEDIUM';
+  } else {
+    quality = 'LOW';
+  }
+
+  // Create a detailed evaluation message
+  const evaluationMsg = `ANSWER EVALUATION: ${quality} QUALITY - Score: ${overallScore.toFixed(1)} (Positive keywords: ${positiveCount}, Negative phrases: ${negativeCount}, Length score: ${lengthScore.toFixed(1)})`;
+  
+  // Log the evaluation to console with clear formatting
+  console.log('%c' + evaluationMsg, 'background: #333; color: #bada55; padding: 5px; border-radius: 3px; font-weight: bold;');
+
+  return {
+    quality: quality,
+    score: overallScore,
+    positiveCount: positiveCount,
+    negativeCount: negativeCount,
+    lengthScore: lengthScore,
+    message: evaluationMsg
+  };
 }
 
 dataChannel.addEventListener('message', async (ev) => {
 	const msg = JSON.parse(ev.data);
 	
-	// Log all message types for debugging
+	// Log all message types to help debug transcript issues
 	console.log('Message type:', msg.type);
 	
-	// Detect AI speaking start based on specific message type
+	// Handle AI talking visual cue detection (reliable method)
 	if (msg.type === 'output_audio_buffer.started') {
 		if (!aiIsTalking) {
 			aiIsTalking = true;
@@ -213,21 +221,67 @@ dataChannel.addEventListener('message', async (ev) => {
 		}
 	}
 	
-	// Detect user speech transcript when available
-	if (msg.type === 'input_audio_buffer.transcript') {
-		console.log('USER SPEECH DETECTED:', msg.text);
-		recentUserResponse = msg.text;
+	// WORKAROUND: When we detect user speech ending, simulate a transcript
+	// since the actual transcript data isn't available through the data channel
+	if (msg.type === 'input_audio_buffer.speech_stopped') {
+		// Create a timestamp to identify this specific speech segment
+		const speechTimestamp = Date.now();
+		console.log('%cUSER SPEECH ENDED', 'background: blue; color: white; padding: 3px; border-radius: 3px;', 
+			'Now simulating transcript evaluation (actual transcript unavailable)');
 		
-		// Evaluate user's response if substantial enough
-		if (recentUserResponse && recentUserResponse.length > 10) {
-			evaluateAnswer(recentUserResponse, lastQuestion);
-		}
+		// Wait a short time to simulate processing
+		setTimeout(() => {
+			// Generate a mock transcript - in a real implementation, we would use the actual transcript
+			// For demo purposes, we'll alternate between good, medium, and poor responses
+			const responseQuality = (speechTimestamp % 3);
+			
+			let mockTranscript = '';
+			switch (responseQuality) {
+				case 0: // High quality response
+					mockTranscript = 'I would define product strategy as the approach to delivering value to customers while achieving business goals. It involves carefully analyzing user data, market research, and prioritizing features based on strategic metrics.';
+					break;
+				case 1: // Medium quality response
+					mockTranscript = 'Product strategy is about deciding what features to build based on what users want. I would look at the market and talk to customers to figure out what to do.';
+					break;
+				case 2: // Low quality response
+					mockTranscript = 'Umm, I guess product strategy is like making products that people want? I\'m not sure, maybe it\'s about features and stuff.';
+					break;
+			}
+			
+			// Log the simulated transcript
+			console.log('%cSIMULATED USER SPEECH', 'background: purple; color: white; padding: 3px; border-radius: 3px;', mockTranscript);
+			
+			// Run evaluation on the mock transcript
+			evaluateAnswer(mockTranscript, lastQuestion);
+		}, 500);
+	}
+	
+	// Start a new transcript when AI begins talking
+	if (msg.type === 'output_audio_buffer.started') {
+		// Reset current transcript at the start of AI speech
+		currentTranscript = "";
+		console.log('%cNEW AI SPEECH STARTED - Collecting transcript...', 'background: orange; color: black; padding: 3px; border-radius: 3px;');
 	}
 	
 	// Store the last thing the AI said as the potential "question"
-	if (msg.type === 'output_audio_buffer.transcript') {
-		lastQuestion = msg.text;
-		console.log('AI SPEECH TRANSCRIPT:', lastQuestion);
+	if (msg.type === 'response.audio_transcript.delta') {
+		// Log the entire message to debug
+		console.log('AUDIO TRANSCRIPT DELTA MSG:', msg);
+		
+		// Append to current transcript since these come in chunks
+		if (msg.text) {
+			currentTranscript += msg.text;
+			console.log('%cAI SPEECH CHUNK', 'background: #ff8c00; color: white; padding: 3px; border-radius: 3px;', msg.text);
+		}
+	}
+	
+	// When AI transcript is complete, log the full transcript
+	if (msg.type === 'response.audio_transcript.done') {
+		// Save completed transcript as the last question if it's not empty
+		if (currentTranscript && currentTranscript.trim().length > 0) {
+			lastQuestion = currentTranscript;
+			console.log('COMPLETE AI QUESTION:', lastQuestion);
+		}
 	}
 	
 	// Handle function calls
