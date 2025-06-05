@@ -1,0 +1,9 @@
+{
+  "name": "pm-interview-simulation-functions",
+  "version": "1.0.0",
+  "description": "Serverless functions for PM Interview Simulation",
+  "type": "module",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}

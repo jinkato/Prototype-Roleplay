@@ -8,14 +8,18 @@ A web application that simulates a Junior Product Manager interview using OpenAI
 - Dynamic slides that change based on interview questions
 - Real-time audio processing with WebRTC
 - 5-minute structured interview simulation
+- Secure API key handling with Netlify serverless functions
 
 ## Prerequisites
 
 - A modern web browser that supports WebRTC
 - An OpenAI API key with access to the GPT-4o Realtime API
-- Python 3.x (for local development server)
+- Node.js and npm (for Netlify deployment)
+- Netlify account (for deployment with environment variables)
 
 ## Setup
+
+### Local Development
 
 1. **Clone the repository**:
    ```bash
@@ -23,20 +27,53 @@ A web application that simulates a Junior Product Manager interview using OpenAI
    cd roleplay
    ```
 
-2. **API Key**: When you start the application in your browser, you'll be prompted to enter your OpenAI API key. The key will be stored in your browser's localStorage and never sent to any server other than OpenAI.
-   - Get an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-   - Make sure your API key has access to the GPT-4o Realtime API
-
-3. **Start the server**:
+2. **Install dependencies**:
    ```bash
-   npm run start
-   ```
-   Or alternatively:
-   ```bash
-   python3 -m http.server 8000 --directory public
+   npm install
    ```
 
-4. **Open in browser**: Navigate to `http://localhost:8000` in your web browser
+3. **Configure environment variables**:
+   Create a `.env` file in the project root with your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+
+4. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Open in browser**: Navigate to the URL provided by Netlify CLI (typically `http://localhost:8888`)
+
+### Netlify Deployment
+
+1. **Install Netlify CLI** (if not already installed):
+   ```bash
+   npm install -g netlify-cli
+   ```
+
+2. **Login to Netlify**:
+   ```bash
+   netlify login
+   ```
+
+3. **Initialize Netlify site**:
+   ```bash
+   netlify init
+   ```
+   Follow the prompts to either create a new site or connect to an existing one
+
+4. **Set environment variables**:
+   ```bash
+   netlify env:set OPENAI_API_KEY your_openai_api_key_here
+   ```
+
+5. **Deploy to Netlify**:
+   ```bash
+   npm run deploy
+   ```
+
+6. **Access your deployed site**: Use the URL provided by Netlify after deployment
 
 ## Usage
 

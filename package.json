@@ -1,9 +1,18 @@
 {
-  "name": "voice-web-control",
+  "name": "pm-interview-simulation",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "python3 -m http.server 8000 --directory public",
-    "serve": "python3 -m http.server 8000 --directory public"
+    "serve": "python3 -m http.server 8000 --directory public",
+    "dev": "netlify dev",
+    "build": "# No build step needed for static assets",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.10.1"
   }
 }

@@ -245,28 +245,10 @@ function startVoiceChat() {
 		peerConnection.createOffer().then((offer) => {
 			peerConnection.setLocalDescription(offer);
 
-			// Try to get API key from localStorage first (if user previously entered it)
-			let OPENAI_API_KEY = localStorage.getItem('openai_api_key');
-
-			// If no API key in storage, prompt the user
-			if (!OPENAI_API_KEY) {
-				OPENAI_API_KEY = prompt('Please enter your OpenAI API key (it will be stored in your browser only):', '');
-
-				// Save to localStorage for future use
-				if (OPENAI_API_KEY) {
-					localStorage.setItem('openai_api_key', OPENAI_API_KEY);
-				} else {
-					// If user cancels, show alert and return
-					alert('An OpenAI API key is required to use this application.');
-					return;
-				}
-			}
-
-			// Create ephemeral session directly with OpenAI
-			fetch("https://api.openai.com/v1/realtime/sessions", {
+			// Create ephemeral session using Netlify serverless function
+			fetch("/.netlify/functions/create-session", {
 				method: "POST",
 				headers: {
-					"Authorization": `Bearer ${OPENAI_API_KEY}`,
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
