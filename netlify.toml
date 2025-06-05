@@ -5,6 +5,13 @@
   
 [dev]
   framework = "#static"
-  
+
+[build.environment]
+  # Force Netlify to expose environment variables to functions
+  NODE_ENV = "production"
+
 [functions]
   node_bundler = "esbuild"
+  # Include all environment variables
+  included_files = [".env"]
+  external_node_modules = ["node-fetch"]
