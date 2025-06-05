@@ -140,61 +140,10 @@ let lastQuestion = "";
 let recentUserResponse = "";
 let currentTranscript = "";
 
-// Function to evaluate the quality of the user's answer
-function evaluateAnswer(response, question) {
-  // List of positive keywords for good PM answers
-  const positiveKeywords = [
-    'strategy', 'user', 'customer', 'data', 'metrics', 'kpi', 'prioritize',
-    'research', 'value', 'stakeholder', 'roadmap', 'feature', 'market',
-    'insight', 'requirement', 'solution', 'analyze', 'implement', 'product'
-  ];
-
-  // List of negative keywords indicating uncertainty or low quality
-  const negativeKeywords = [
-    'dunno', 'not sure', 'i guess', 'maybe', 'probably',
-    'i don\'t know', 'umm', 'uh', 'like'
-  ];
-
-  // Count how many positive keywords are present
-  const positiveCount = positiveKeywords.filter(keyword =>
-    response.toLowerCase().includes(keyword.toLowerCase())
-  ).length;
-
-  // Count negative keywords
-  const negativeCount = negativeKeywords.filter(keyword =>
-    response.toLowerCase().includes(keyword.toLowerCase())
-  ).length;
-
-  // Factor in response length (longer tends to be better, to a point)
-  const lengthScore = Math.min(response.length / 100, 3); // Cap at 3 points
-
-  // Calculate overall score
-  const overallScore = positiveCount - negativeCount + lengthScore;
-
-  // Determine quality rating
-  let quality;
-  if (overallScore >= 5) {
-    quality = 'HIGH';
-  } else if (overallScore >= 2) {
-    quality = 'MEDIUM';
-  } else {
-    quality = 'LOW';
-  }
-
-  // Create a detailed evaluation message
-  const evaluationMsg = `ANSWER EVALUATION: ${quality} QUALITY - Score: ${overallScore.toFixed(1)} (Positive keywords: ${positiveCount}, Negative phrases: ${negativeCount}, Length score: ${lengthScore.toFixed(1)})`;
-  
-  // Log the evaluation to console with clear formatting
-  console.log('%c' + evaluationMsg, 'background: #333; color: #bada55; padding: 5px; border-radius: 3px; font-weight: bold;');
-
-  return {
-    quality: quality,
-    score: overallScore,
-    positiveCount: positiveCount,
-    negativeCount: negativeCount,
-    lengthScore: lengthScore,
-    message: evaluationMsg
-  };
+// Simple logging function for user answers (no quality evaluation)
+function logUserSpeech(response) {
+	// Log the speech to console
+	console.log('%cUSER SPEECH', 'background: blue; color: white; padding: 3px; border-radius: 3px;', response);
 }
 
 dataChannel.addEventListener('message', async (ev) => {
@@ -221,38 +170,17 @@ dataChannel.addEventListener('message', async (ev) => {
 		}
 	}
 	
-	// WORKAROUND: When we detect user speech ending, simulate a transcript
-	// since the actual transcript data isn't available through the data channel
+	// When we detect user speech ending, simulate a transcript
 	if (msg.type === 'input_audio_buffer.speech_stopped') {
-		// Create a timestamp to identify this specific speech segment
-		const speechTimestamp = Date.now();
-		console.log('%cUSER SPEECH ENDED', 'background: blue; color: white; padding: 3px; border-radius: 3px;', 
-			'Now simulating transcript evaluation (actual transcript unavailable)');
+		console.log('%cUSER SPEECH ENDED', 'background: blue; color: white; padding: 3px; border-radius: 3px;');
 		
 		// Wait a short time to simulate processing
 		setTimeout(() => {
-			// Generate a mock transcript - in a real implementation, we would use the actual transcript
-			// For demo purposes, we'll alternate between good, medium, and poor responses
-			const responseQuality = (speechTimestamp % 3);
-			
-			let mockTranscript = '';
-			switch (responseQuality) {
-				case 0: // High quality response
-					mockTranscript = 'I would define product strategy as the approach to delivering value to customers while achieving business goals. It involves carefully analyzing user data, market research, and prioritizing features based on strategic metrics.';
-					break;
-				case 1: // Medium quality response
-					mockTranscript = 'Product strategy is about deciding what features to build based on what users want. I would look at the market and talk to customers to figure out what to do.';
-					break;
-				case 2: // Low quality response
-					mockTranscript = 'Umm, I guess product strategy is like making products that people want? I\'m not sure, maybe it\'s about features and stuff.';
-					break;
-			}
+			// Generate a simple mock transcript
+			const mockTranscript = 'This is a simulated user response to the interview question.';
 			
 			// Log the simulated transcript
-			console.log('%cSIMULATED USER SPEECH', 'background: purple; color: white; padding: 3px; border-radius: 3px;', mockTranscript);
-			
-			// Run evaluation on the mock transcript
-			evaluateAnswer(mockTranscript, lastQuestion);
+			logUserSpeech(mockTranscript);
 		}, 500);
 	}
 	
@@ -336,7 +264,7 @@ function startVoiceChat() {
 				},
 				body: JSON.stringify({
 					model: "gpt-4o-realtime-preview-2024-12-17",
-					instructions: "<interview_simulation><role>You are Tom, conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer named Tom</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline><guideline>CRITICAL: Always include the slide command in brackets when asking specific questions</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement?</question><slide_command>[Show Instagram Slide]</slide_command></category><category name='analytical'><question>How would you measure the success of a new feature launch?</question><slide_command>[Show New Feature Slide]</slide_command></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams?</question><slide_command>[Show Disagreement Slide]</slide_command></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction><instruction>MANDATORY: Include the slide_command in square brackets exactly as written - these are system commands, not spoken words</instruction></instructions><start_message>Begin the interview now.</start_message></interview_simulation>",
+					instructions: "<interview_simulation><role>You are Tom, conducting a focused 5-minute interview simulation for a Junior Product Manager position. You will guide the entire conversation and decide which questions to ask and when to move forward. CRITICAL RULE: You MUST include slide commands in brackets for every question you ask.</role><interviewer_guidelines><guideline>Act as an experienced Product Manager interviewer named Tom</guideline><guideline>Guide the conversation - you decide the flow and pacing</guideline><guideline>Ask follow-up/probing questions when responses need more depth</guideline><guideline>Move to next question when you've gotten enough information</guideline><guideline>Give brief feedback before moving to new topics</guideline><guideline>Keep the entire interview to 5 minutes total</guideline><guideline>ABSOLUTE REQUIREMENT: NEVER ask a question without including its corresponding slide command in brackets</guideline><guideline>REMEMBER: Instagram question = [Show Instagram Slide], Feature question = [Show New Feature Slide], Disagreement question = [Show Disagreement Slide]</guideline></interviewer_guidelines><interview_structure><phase name='opening' duration='30 seconds'><action>Introduce yourself as the interviewer</action><action>Ask for brief background and interest in PM role</action></phase><phase name='main_questions' duration='3.5 minutes'><focus>Choose 2-3 questions from different categories below - ALWAYS include the slide command in brackets</focus><focus>Ask probing questions like: 'Can you elaborate on that?' 'What data would you look at?' 'How would you prioritize?'</focus></phase><phase name='wrap_up' duration='1 minute'><action>Give overall feedback</action><action>End the interview</action></phase></interview_structure><question_bank><category name='product_thinking'><question>How would you improve Instagram's user engagement? MANDATORY: [Show Instagram Slide]</question></category><category name='analytical'><question>How would you measure the success of a new feature launch? MANDATORY: [Show New Feature Slide]</question></category><category name='collaboration'><question>How would you handle a disagreement between engineering and design teams? MANDATORY: [Show Disagreement Slide]</question></category></question_bank><probing_questions><probe>Can you walk me through your thinking process there?</probe><probe>What data or metrics would you look at to validate that?</probe><probe>How would you prioritize those different options?</probe><probe>What would you do if stakeholders disagreed with your approach?</probe><probe>Can you give me a specific example?</probe></probing_questions><instructions><instruction>Start the interview immediately by introducing yourself and asking the opening question</instruction><instruction>Use your judgment to ask follow-up questions or move to the next topic</instruction><instruction>Keep track of time and wrap up at 5 minutes</instruction><instruction>Provide constructive feedback throughout</instruction><instruction>CRITICAL: Every time you ask the Instagram question include [Show Instagram Slide]</instruction><instruction>CRITICAL: Every time you ask the feature launch question include [Show New Feature Slide]</instruction><instruction>CRITICAL: Every time you ask the disagreement question include [Show Disagreement Slide]</instruction><instruction>FAILURE TO INCLUDE SLIDE COMMANDS WILL BREAK THE SYSTEM</instruction></instructions><start_message>Begin the interview now.</start_message></interview_simulation>",
 					voice: "ash",
 				}),
 			})
